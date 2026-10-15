@@ -1,7 +1,7 @@
 import * as fs from "fs"
 import enhancedResolve, { CachedInputFileSystem } from "enhanced-resolve"
 
-type ModuleResolver = (modulePath: string) => string | false
+export type ModuleResolver = (modulePath: string) => string | false
 type ResolveType = (context?: any, path?: any, request?: any) => string | false
 
 export const resolveModule: ModuleResolver = modulePath => {
@@ -9,6 +9,7 @@ export const resolveModule: ModuleResolver = modulePath => {
 
   try {
     resolve = enhancedResolve.create.sync({
+      // @ts-expect-error - `@types/node` includes encoding values that `enhanced-resolve`'s `BaseFileSystem` type doesn't accept
       fileSystem: new CachedInputFileSystem(fs, 5000),
       extensions: [`.ts`, `.tsx`, `.js`, `.jsx`],
     })

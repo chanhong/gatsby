@@ -3,6 +3,231 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.16.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@5.16.0/packages/gatsby-plugin-feed) (2026-01-26)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v5.16)
+
+#### Features
+
+- support React 19 [#39306](https://github.com/gatsbyjs/gatsby/issues/39306) ([9e39c05](https://github.com/gatsbyjs/gatsby/commit/9e39c05f2c48aedfc495421367e67ee4bcbf1c4a))
+
+#### Bug Fixes
+
+- use more explicit node.js version range [#39398](https://github.com/gatsbyjs/gatsby/issues/39398) ([c355640](https://github.com/gatsbyjs/gatsby/commit/c35564071466681951402a04fb33ae34cc673a2b))
+
+#### Other Changes
+
+- Revert "chore(release): Publish next pre-minor" ([3539ec8](https://github.com/gatsbyjs/gatsby/commit/3539ec8d8973e8eabbeb10734e3bb54bd831ac6c))
+
+## [5.15.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@5.15.0/packages/gatsby-plugin-feed) (2025-08-27)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v5.15)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+## [5.14.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@5.14.0/packages/gatsby-plugin-feed) (2024-11-06)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v5.14)
+
+#### Bug Fixes
+
+- update dependency fs-extra to ^11.2.0 [#38727](https://github.com/gatsbyjs/gatsby/issues/38727) ([cb33fe5](https://github.com/gatsbyjs/gatsby/commit/cb33fe5d02b3a42cf629baf948a7aae7a9e7dd0f))
+
+### [5.13.1](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@5.13.1/packages/gatsby-plugin-feed) (2024-01-23)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+## [5.13.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@5.13.0/packages/gatsby-plugin-feed) (2023-12-18)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v5.13)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+### [5.12.3](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@5.12.3/packages/gatsby-plugin-feed) (2023-10-26)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+### [5.12.2](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@5.12.2/packages/gatsby-plugin-feed) (2023-10-20)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+### [5.12.1](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@5.12.1/packages/gatsby-plugin-feed) (2023-10-09)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+## [5.12.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@5.12.0/packages/gatsby-plugin-feed) (2023-08-24)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v5.12)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+## [5.11.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@5.11.0/packages/gatsby-plugin-feed) (2023-06-15)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v5.11)
+
+#### Chores
+
+- depend on `joi` instead of `@hapi/joi` [#38205](https://github.com/gatsbyjs/gatsby/issues/38205) ([52a0023](https://github.com/gatsbyjs/gatsby/commit/52a00232fe2c832a32d192595d506bce91944e07))
+
+## [5.10.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@5.10.0/packages/gatsby-plugin-feed) (2023-05-16)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v5.10)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+## [5.9.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@5.9.0/packages/gatsby-plugin-feed) (2023-04-18)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v5.9)
+
+#### Bug Fixes
+
+- update dependency fs-extra to ^11.1.1 [#37827](https://github.com/gatsbyjs/gatsby/issues/37827) ([3e9a590](https://github.com/gatsbyjs/gatsby/commit/3e9a590fdc0b4cdbc763b6a6e3ca3e983ac8231a))
+
+#### Chores
+
+- Update README with clearer instructions [#37930](https://github.com/gatsbyjs/gatsby/issues/37930) ([4a1b2ce](https://github.com/gatsbyjs/gatsby/commit/4a1b2ce278d08bd6b473e891dab588efc51c9f63))
+
+## [5.8.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@5.8.0/packages/gatsby-plugin-feed) (2023-03-21)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v5.8)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+## [5.7.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@5.7.0/packages/gatsby-plugin-feed) (2023-02-21)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v5.7)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+## [5.6.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@5.6.0/packages/gatsby-plugin-feed) (2023-02-07)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v5.6)
+
+#### Bug Fixes
+
+- update babel monorepo [#37568](https://github.com/gatsbyjs/gatsby/issues/37568) ([13a0a9e](https://github.com/gatsbyjs/gatsby/commit/13a0a9e83dcb015b65dff6b73cdd5dea09c2988f))
+
+## [5.5.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@5.5.0/packages/gatsby-plugin-feed) (2023-01-24)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v5.5)
+
+#### Chores
+
+- Upgrade some non-breaking major versions [#37406](https://github.com/gatsbyjs/gatsby/issues/37406) ([2ea80c0](https://github.com/gatsbyjs/gatsby/commit/2ea80c02e464fe9306f6a1eccbb6c74983a76208))
+
+## [5.4.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@5.4.0/packages/gatsby-plugin-feed) (2023-01-10)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v5.4)
+
+#### Chores
+
+- update babel monorepo [#37386](https://github.com/gatsbyjs/gatsby/issues/37386) ([b941876](https://github.com/gatsbyjs/gatsby/commit/b94187633d94d0f0071b38ffe93380dd802ec70f))
+
+### [5.3.1](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@5.3.1/packages/gatsby-plugin-feed) (2022-12-14)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+## [5.3.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@5.3.0/packages/gatsby-plugin-feed) (2022-12-13)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v5.3)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+## [5.2.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@5.2.0/packages/gatsby-plugin-feed) (2022-11-25)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v5.2)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+## [5.1.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@5.1.0/packages/gatsby-plugin-feed) (2022-11-22)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v5.1)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+## [5.0.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@5.0.0/packages/gatsby-plugin-feed) (2022-11-08)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v5.0)
+
+#### Chores
+
+- Update peerDeps [#36965](https://github.com/gatsbyjs/gatsby/issues/36965) ([b624442](https://github.com/gatsbyjs/gatsby/commit/b6244424fe8b724cbc23b80b2b4f5424cc2055a4))
+- apply patches for v5 [#36796](https://github.com/gatsbyjs/gatsby/issues/36796) ([25f79b6](https://github.com/gatsbyjs/gatsby/commit/25f79b6c3719fdf09584ade620a05c66ba2a697c))
+
+## [4.24.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@4.24.0/packages/gatsby-plugin-feed) (2022-09-27)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v4.24)
+
+#### Chores
+
+- allow react/react-dom@experimental [#36533](https://github.com/gatsbyjs/gatsby/issues/36533) ([7ef4a3f](https://github.com/gatsbyjs/gatsby/commit/7ef4a3fe080d45e9edaff9f1d4deebd12a00ddbd))
+
+### [4.23.1](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@4.23.1/packages/gatsby-plugin-feed) (2022-09-22)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+## [4.23.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@4.23.0/packages/gatsby-plugin-feed) (2022-09-13)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v4.23)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+## [4.22.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@4.22.0/packages/gatsby-plugin-feed) (2022-08-30)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v4.22)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+## [4.21.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@4.21.0/packages/gatsby-plugin-feed) (2022-08-16)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v4.21)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+## [4.20.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@4.20.0/packages/gatsby-plugin-feed) (2022-08-02)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v4.20)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+## [4.19.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@4.19.0/packages/gatsby-plugin-feed) (2022-07-19)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v4.19)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+### [4.18.1](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@4.18.1/packages/gatsby-plugin-feed) (2022-07-12)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+## [4.18.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@4.18.0/packages/gatsby-plugin-feed) (2022-07-05)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v4.18)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+## [4.17.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@4.17.0/packages/gatsby-plugin-feed) (2022-06-21)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v4.17)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+## [4.16.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@4.16.0/packages/gatsby-plugin-feed) (2022-06-07)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v4.16)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+### [4.15.1](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@4.15.1/packages/gatsby-plugin-feed) (2022-06-01)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
+## [4.15.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@4.15.0/packages/gatsby-plugin-feed) (2022-05-24)
+
+[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v4.15)
+
+**Note:** Version bump only for package gatsby-plugin-feed
+
 ## [4.14.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-plugin-feed@4.14.0/packages/gatsby-plugin-feed) (2022-05-10)
 
 [🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v4.14)

@@ -1,6 +1,6 @@
-import store from "~/store"
+import { getStore } from "~/store"
 
-import { fieldOfTypeWasFetched } from "./helpers"
+import { diffBuiltTypeDefs, fieldOfTypeWasFetched } from "./helpers"
 
 import buildType from "./build-types"
 import { getGatsbyNodeTypeNames } from "../source-nodes/fetch-nodes/fetch-nodes"
@@ -12,8 +12,8 @@ import { addRemoteFilePolyfillInterface } from "gatsby-plugin-utils/polyfill-rem
 /**
  * createSchemaCustomization
  */
-const customizeSchema = async ({ actions, schema }) => {
-  const state = store.getState()
+const customizeSchema = async ({ actions, schema, store: gatsbyStore }) => {
+  const state = getStore().getState()
 
   const {
     gatsbyApi: { pluginOptions },
@@ -62,8 +62,7 @@ const customizeSchema = async ({ actions, schema }) => {
           break
         case `SCALAR`:
           /**
-           * custom scalar types aren't imlemented currently.
-           *  @todo make this hookable so sub-plugins or plugin options can add custom scalar support.
+           * custom scalar types aren't supported.
            */
           break
       }
@@ -87,8 +86,9 @@ const customizeSchema = async ({ actions, schema }) => {
       fields: nonNodeRootFields,
       interfaces: [`Node`],
     },
-    isAGatsbyNode: true,
   })
+
+  typeDefs.push(wpType)
 
   typeDefs.push(
     addRemoteFilePolyfillInterface(
@@ -100,12 +100,12 @@ const customizeSchema = async ({ actions, schema }) => {
       {
         schema,
         actions,
+        store: gatsbyStore,
       }
     )
   )
 
-  typeDefs.push(wpType)
-
+  diffBuiltTypeDefs(typeDefs)
   actions.createTypes(typeDefs)
 }
 

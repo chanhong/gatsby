@@ -1,7 +1,3 @@
-import {
-  ICreatePageDependencyActionPayloadType,
-  IDeleteNodeManifests,
-} from "./../types"
 import reporter from "gatsby-cli/lib/reporter"
 
 import {
@@ -28,6 +24,9 @@ import {
   IApiFinishedAction,
   IQueryClearDirtyQueriesListToEmitViaWebsocket,
   ICreateJobV2FromInternalAction,
+  ICreatePageDependencyActionPayloadType,
+  IDeleteNodeManifests,
+  IClearGatsbyImageSourceUrlAction,
 } from "../types"
 
 import { gatsbyConfigSchema } from "../../joi-schemas/joi"
@@ -121,8 +120,8 @@ export const apiFinished = (
 }
 
 /**
- * When the query watcher extracts a "static" GraphQL query from <StaticQuery>
- * components, it calls this to store the query with its component.
+ * When the query watcher extracts a "static" GraphQL query from useStaticQuery
+ * it calls this to store the query with its component.
  * @private
  */
 export const replaceStaticQuery = (
@@ -312,7 +311,7 @@ export const removeStaleJob = (
  */
 export const setSiteConfig = (config?: unknown): ISetSiteConfig => {
   const result = gatsbyConfigSchema.validate(config || {})
-  const normalizedPayload: IGatsbyConfig = result.value
+  const normalizedPayload = result.value as IGatsbyConfig
 
   if (result.error) {
     const hasUnknownKeys = result.error.details.filter(
@@ -438,4 +437,11 @@ export const createJobV2FromInternalJob =
 
       return result
     })
+  }
+
+export const clearGatsbyImageSourceUrls =
+  (): IClearGatsbyImageSourceUrlAction => {
+    return {
+      type: `CLEAR_GATSBY_IMAGE_SOURCE_URL`,
+    }
   }

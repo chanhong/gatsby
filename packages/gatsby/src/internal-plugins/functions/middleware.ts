@@ -1,4 +1,4 @@
-import { match as reachMatch } from "@gatsbyjs/reach-router/lib/utils"
+import { match as reachMatch } from "@gatsbyjs/reach-router"
 import cookie from "cookie"
 import { urlencoded, text, json, raw } from "express"
 import type { RequestHandler, Request, Response, NextFunction } from "express"
@@ -9,6 +9,7 @@ import {
   createConfig,
   IGatsbyFunctionConfigProcessed,
   IGatsbyBodyParserConfigProcessed,
+  IAPIFunctionWarning,
 } from "./config"
 import type { IGatsbyFunction } from "../../redux/types"
 
@@ -43,6 +44,33 @@ interface ICreateMiddlewareConfig {
   getFunctions: () => Array<IGatsbyFunction>
   prepareFn?: (functionObj: IGatsbyFunction) => Promise<void> | void
   showDebugMessageInResponse?: boolean
+}
+
+export function printConfigWarnings(
+  warnings: Array<IAPIFunctionWarning>,
+  functionObj: IGatsbyFunction
+): void {
+  if (warnings.length) {
+    for (const warning of warnings) {
+      reporter.warn(
+        `${
+          warning.property
+            ? `\`${warning.property}\` property of exported config`
+            : `Exported config`
+        } in \`${
+          functionObj.originalRelativeFilePath
+        }\` is misconfigured.\nExpected object:\n\n${
+          warning.expectedType
+        }\n\nGot:\n\n${JSON.stringify(
+          warning.original
+        )}\n\nUsing default:\n\n${JSON.stringify(
+          warning.replacedWith,
+          null,
+          2
+        )}`
+      )
+    }
+  }
 }
 
 function createSetContextFunctionMiddleware({
@@ -122,11 +150,15 @@ function createSetContextFunctionMiddleware({
       }
 
       if (fnToExecute) {
+        const { config, warnings } = createConfig(userConfig)
+
+        printConfigWarnings(warnings, functionObj)
+
         req.context = {
           functionObj,
           fnToExecute,
           params: req.params,
-          config: createConfig(userConfig, functionObj),
+          config,
           showDebugMessageInResponse: showDebugMessageInResponse ?? false,
         }
       }
@@ -223,10 +255,10 @@ export function functionMiddlewares(
     setCookies,
     setContext,
     multer().any(),
+    bodyParserMiddlewareWithConfig(`raw`),
     bodyParserMiddlewareWithConfig(`text`),
     bodyParserMiddlewareWithConfig(`urlencoded`),
     bodyParserMiddlewareWithConfig(`json`),
-    bodyParserMiddlewareWithConfig(`raw`),
     executeFunction,
   ]
 }

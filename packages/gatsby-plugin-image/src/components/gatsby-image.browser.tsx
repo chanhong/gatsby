@@ -88,6 +88,14 @@ const GatsbyImageHydrator: FC<GatsbyImageProps> = function GatsbyImageHydrator({
 
   const sizer = getSizer(layout, width, height)
 
+  // Memoize this { __html } object to work around an undocumented behavioral change in React 19:
+  // https://github.com/facebook/react/issues/31660.
+  const dangerouslySetInnerHTML = useMemo(() => {
+    return {
+      __html: sizer,
+    }
+  }, [sizer])
+
   useEffect(() => {
     if (!renderImageToStringPromise) {
       renderImageToStringPromise = import(`./lazy-hydrate`).then(
@@ -122,12 +130,13 @@ const GatsbyImageHydrator: FC<GatsbyImageProps> = function GatsbyImageHydrator({
           ssrImage.removeAttribute(`data-gatsby-image-ssr`)
         }, 0)
       } else {
-        document.addEventListener(`load`, function onLoadListener() {
-          document.removeEventListener(`load`, onLoadListener)
+        onStartLoad?.({
+          wasCached: true,
+        })
 
-          onStartLoad?.({
-            wasCached: true,
-          })
+        ssrImage.addEventListener(`load`, function onLoadListener() {
+          ssrImage.removeEventListener(`load`, onLoadListener)
+
           onLoad?.({
             wasCached: true,
           })
@@ -151,6 +160,10 @@ const GatsbyImageHydrator: FC<GatsbyImageProps> = function GatsbyImageHydrator({
     let cleanupCallback
     renderImageToStringPromise.then(
       ({ renderImageToString, swapPlaceholderImage }) => {
+        if (!root.current) {
+          return
+        }
+
         root.current.innerHTML = renderImageToString({
           isLoading: true,
           isLoaded: imageCache.has(cacheKey),
@@ -217,9 +230,7 @@ const GatsbyImageHydrator: FC<GatsbyImageProps> = function GatsbyImageHydrator({
     },
     className: `${wClass}${className ? ` ${className}` : ``}`,
     ref: root,
-    dangerouslySetInnerHTML: {
-      __html: sizer,
-    },
+    dangerouslySetInnerHTML,
     suppressHydrationWarning: true,
   })
 }

@@ -10,7 +10,6 @@ import { Options as ISlugifyOptions } from "@sindresorhus/slugify"
 import { createClientOnlyPage } from "./create-client-only-page"
 import { createPagesFromCollectionBuilder } from "./create-pages-from-collection-builder"
 import systemPath from "path"
-import { trackFeatureIsUsed } from "gatsby-telemetry"
 import { Reporter } from "gatsby/reporter"
 import type { TrailingSlash } from "gatsby-page-utils"
 
@@ -29,6 +28,7 @@ export function createPage(
   graphql: CreatePagesArgs["graphql"],
   reporter: Reporter,
   trailingSlash: TrailingSlash,
+  pagesPath: string,
   ignore?: IPathIgnoreOptions | string | Array<string> | null,
   slugifyOptions?: ISlugifyOptions
 ): void {
@@ -47,22 +47,21 @@ export function createPage(
 
   // If the page includes a `{}` in it, then we create it as a collection builder
   if (pathIsCollectionBuilder(absolutePath)) {
-    trackFeatureIsUsed(`UnifiedRoutes:collection-page-builder`)
-    createPagesFromCollectionBuilder(
+    createPagesFromCollectionBuilder({
       filePath,
       absolutePath,
+      pagesPath,
       actions,
       graphql,
       reporter,
       trailingSlash,
-      slugifyOptions
-    )
+      slugifyOptions,
+    })
     return
   }
 
   // If the path includes a `[]` in it, then we create it as a client only route
   if (pathIsClientOnlyRoute(absolutePath)) {
-    trackFeatureIsUsed(`UnifiedRoutes:client-page-builder`)
     createClientOnlyPage(filePath, absolutePath, actions, trailingSlash)
     return
   }

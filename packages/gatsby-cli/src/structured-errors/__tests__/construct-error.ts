@@ -2,21 +2,16 @@ import constructError from "../construct-error"
 import { errorMap } from "../error-map"
 import { Level } from "../types"
 
-let log
-let processExit
-beforeEach(() => {
-  log = jest.spyOn(console, `log`).mockImplementation(() => {})
-  processExit = (
-    jest.spyOn(process, `exit`) as unknown as jest.Mock
-  ).mockImplementation(() => {})
+const processExit = (
+  jest.spyOn(process, `exit`) as unknown as jest.Mock
+).mockImplementation(() => {})
+const log = (
+  jest.spyOn(console, `log`) as unknown as jest.Mock
+).mockImplementation(() => {})
 
-  log.mockReset()
-  processExit.mockReset()
-})
-
-afterAll(() => {
-  ;(console.log as jest.Mock).mockClear()
-  ;(process.exit as unknown as jest.Mock).mockClear()
+afterEach(() => {
+  log.mockClear()
+  processExit.mockClear()
 })
 
 test(`it exits on invalid error schema`, () => {
@@ -58,7 +53,7 @@ test(`it constructs an error from the supplied errorMap`, () => {
 
 test(`it does not overwrite internal error map`, () => {
   const error = constructError(
-    { details: { id: `95312`, context: { ref: `Error!` } } },
+    { details: { id: `95312`, context: { undefinedGlobal: `window` } } },
     {
       "95312": {
         text: (context): string => `Error text is ${context.someProp} `,

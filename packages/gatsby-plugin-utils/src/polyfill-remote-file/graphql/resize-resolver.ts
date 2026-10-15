@@ -3,12 +3,12 @@ import { getImageFormatFromMimeType } from "../utils/mime-type-helpers"
 import { stripIndent } from "../utils/strip-indent"
 import {
   dispatchLocalImageServiceJob,
-  shouldDispatch,
+  shouldDispatchLocalImageServiceJob,
 } from "../jobs/dispatchers"
 import { isImage } from "../types"
 import { validateAndNormalizeFormats, calculateImageDimensions } from "./utils"
 
-import type { Actions } from "gatsby"
+import type { Actions, Store } from "gatsby"
 import type {
   IRemoteFileNode,
   IGraphQLFieldConfigDefinition,
@@ -40,7 +40,8 @@ const allowedFormats: Array<ImageFormat> = [
 export async function resizeResolver(
   source: IRemoteFileNode,
   args: Partial<IResizeArgs> & WidthOrHeight,
-  actions: Actions
+  actions: Actions,
+  store?: Store
 ): Promise<{
   width: number
   height: number
@@ -78,7 +79,7 @@ export async function resizeResolver(
     args as IResizeArgs & WidthOrHeight
   )
 
-  if (shouldDispatch()) {
+  if (shouldDispatchLocalImageServiceJob()) {
     dispatchLocalImageServiceJob(
       {
         url: source.url,
@@ -92,16 +93,21 @@ export async function resizeResolver(
         height,
         format,
       },
-      actions
+      actions,
+      store
     )
   }
 
-  const src = generateImageUrl(source, {
-    ...(args as IResizeArgs),
-    width,
-    height,
-    format,
-  })
+  const src = generateImageUrl(
+    source,
+    {
+      ...(args as IResizeArgs),
+      width,
+      height,
+      format,
+    },
+    store
+  )
 
   return {
     src,
@@ -112,7 +118,8 @@ export async function resizeResolver(
 
 export function generateResizeFieldConfig(
   enums: ReturnType<typeof getRemoteFileEnums>,
-  actions: Actions
+  actions: Actions,
+  store?: Store
 ): IGraphQLFieldConfigDefinition<
   IRemoteFileNode,
   ReturnType<typeof resizeResolver>,
@@ -146,7 +153,7 @@ export function generateResizeFieldConfig(
       },
     },
     resolve(source, args): ReturnType<typeof resizeResolver> {
-      return resizeResolver(source, args, actions)
+      return resizeResolver(source, args, actions, store)
     },
   }
 }

@@ -8,6 +8,14 @@ describe(`applyTrailingSlashOption`, () => {
   it(`returns / for root index page`, () => {
     expect(applyTrailingSlashOption(indexPage)).toEqual(indexPage)
   })
+  it(`should leave non-trailing paths for certain suffixes`, () => {
+    expect(applyTrailingSlashOption(`/nested/path.html`)).toEqual(
+      `/nested/path.html`
+    )
+    expect(applyTrailingSlashOption(`/nested/path.xml`)).toEqual(
+      `/nested/path.xml`
+    )
+  })
   describe(`always`, () => {
     it(`should add trailing slash`, () => {
       expect(applyTrailingSlashOption(withoutSlash, `always`)).toEqual(
@@ -39,12 +47,6 @@ describe(`applyTrailingSlashOption`, () => {
       expect(applyTrailingSlashOption(withoutSlash, `ignore`)).toEqual(
         withoutSlash
       )
-    })
-  })
-  describe(`legacy`, () => {
-    it(`should do nothing`, () => {
-      expect(applyTrailingSlashOption(withSlash)).toEqual(withSlash)
-      expect(applyTrailingSlashOption(withoutSlash)).toEqual(withoutSlash)
     })
   })
 })

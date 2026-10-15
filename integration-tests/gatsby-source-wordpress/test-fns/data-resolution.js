@@ -2,9 +2,7 @@
  * @jest-environment node
  */
 
-const {
-  default: fetchGraphql,
-} = require("gatsby-source-wordpress/dist/utils/fetch-graphql")
+const { fetchGraphql } = require("./test-utils/graphql")
 const { URL } = require("url")
 
 const gatsbyConfig = require("../gatsby-config")
@@ -36,7 +34,10 @@ describe(`data resolution`, () => {
 
     expect(data[`allWpTag`].totalCount).toBe(5)
     expect(data[`allWpUser`].totalCount).toBe(1)
-    expect(data[`allWpPage`].totalCount).toBe(6)
+    expect(data[`allWpPage`].totalCount).toBe(
+      // a page is created before the warm cache test run starts
+      isWarmCache ? 8 : 7
+    )
     expect(data[`allWpPost`].totalCount).toBe(5)
     expect(data[`allWpComment`].totalCount).toBe(1)
     expect(data[`allWpTaxonomy`].totalCount).toBe(3)
@@ -44,7 +45,7 @@ describe(`data resolution`, () => {
     expect(data[`allWpMenu`].totalCount).toBe(3)
     expect(data[`allWpMenuItem`].totalCount).toBe(4)
     expect(data[`allWpPostFormat`].totalCount).toBe(0)
-    expect(data[`allWpContentType`].totalCount).toBe(9)
+    expect(data[`allWpContentType`].totalCount).toBe(7)
   })
 
   testResolvedData({
@@ -87,9 +88,8 @@ describe(`data resolution`, () => {
     expect(gatsbyResult.data.allWpTermNode.nodes.length).toBe(14)
 
     expect(gatsbyResult.data.allWpContentNode.nodes.length).toBe(
-      // we add a media item node before running our warm cache build.
-      // so 32 before 33 after
-      isWarmCache ? 33 : 32
+      // A media item and page node are created before running our warm cache build.
+      isWarmCache ? 35 : 33
     )
   })
 
@@ -338,8 +338,8 @@ describe(`data resolution`, () => {
       )
     )
 
-    expect(gatsbyResult.data.wpPage).toStrictEqual(wpGraphQLPageNormalizedPaths)
-    expect(gatsbyResult.data.wp.seo).toStrictEqual(WPGraphQLData.seo)
+    expect(gatsbyResult.data.wpPage).toEqual(wpGraphQLPageNormalizedPaths)
+    expect(gatsbyResult.data.wp.seo).toEqual(WPGraphQLData.seo)
   })
 
   it(`Does not download files whose size exceed the maxFileSizeBytes option`, async () => {

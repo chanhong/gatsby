@@ -8,7 +8,7 @@ import _ from "lodash"
 import { resolve } from "path"
 import { setFieldsOnGraphQLNodeType } from "../extend-node-type"
 import { generateImageSource } from "../gatsby-plugin-image"
-import * as gatsbyCoreUtils from "gatsby-core-utils"
+import * as fetchRemoteFileModule from "gatsby-core-utils/fetch-remote-file"
 import * as pluginSharp from "gatsby-plugin-sharp"
 
 const FIXTURES = resolve(__dirname, `..`, `__fixtures__`)
@@ -20,7 +20,7 @@ jest
   .spyOn(pluginSharp, `getDominantColor`)
   .mockImplementation(() => Promise.resolve(`#mocked`))
 jest
-  .spyOn(gatsbyCoreUtils, `fetchRemoteFile`)
+  .spyOn(fetchRemoteFileModule, `fetchRemoteFile`)
   .mockImplementation(() =>
     Promise.resolve(`${FIXTURES}/contentful-logo-256.png`)
   )
@@ -242,7 +242,7 @@ describe(`gatsby-plugin-image`, () => {
       expect(resp.placeholder.fallback).toMatch(/^data:image\/png;base64,.+/)
       expect(resp).toMatchSnapshot()
     })
-    it(`placeholder traced svg`, async () => {
+    it(`placeholder traced svg (falls back to DOMINANT_COLOR)`, async () => {
       const resp = await extendedNodeType.gatsbyImageData.resolve(
         exampleImage,
         // @ts-ignore
@@ -252,9 +252,8 @@ describe(`gatsby-plugin-image`, () => {
         null,
         null
       )
-      expect(resp.backgroundColor).toEqual(undefined)
-      expect(resp.placeholder.fallback).toMatch(/^data:image\/svg\+xml,.+/)
-      expect(resp.placeholder.fallback).toContain(`fill='%23d3d3d3'`)
+      expect(resp.backgroundColor).toEqual(`#080808`)
+      expect(resp.placeholder).not.toBeDefined()
       expect(resp).toMatchSnapshot()
     })
   })
@@ -302,7 +301,7 @@ describe(`gatsby-plugin-image`, () => {
       expect(resp).toMatchSnapshot()
     })
 
-    it(`custom placeholder tracedSVG`, async () => {
+    it(`custom placeholder tracedSVG (falls back to DOMINANT_COLOR)`, async () => {
       setPluginOptions({
         defaults: {
           placeholder: `tracedSVG`,
@@ -319,8 +318,8 @@ describe(`gatsby-plugin-image`, () => {
         null,
         null
       )
-      expect(resp.placeholder.fallback).toMatch(/^data:image\/svg\+xml,.+/)
-      expect(resp.placeholder.fallback).toContain(`fill='%23639'`)
+      expect(resp.backgroundColor).toEqual(`#080808`)
+      expect(resp.placeholder).not.toBeDefined()
       expect(resp).toMatchSnapshot()
     })
 

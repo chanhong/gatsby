@@ -3,7 +3,6 @@ import {
   AnyEventObject,
   ActionFunction,
   spawn,
-  ActionFunctionMap,
   DoneEventObject,
 } from "xstate"
 import { IBuildContext } from "../../services"
@@ -224,14 +223,24 @@ export const definitionsTypegen: ActionFunction<
   AnyEventObject
 > = async (context, event) => {
   const definitions = event.payload.payload
-  const { schema } = context.store!.getState()
+  const { schema, config } = context.store!.getState()
   const directory = context.program.directory
+  const graphqlTypegenOptions = config.graphqlTypegen
+
+  if (!graphqlTypegenOptions) {
+    throw new Error(`graphqlTypegen option is falsy. This should never happen.`)
+  }
 
   context.reporter!.verbose(`Re-Generating fragments.graphql & TS Types`)
 
   try {
     await writeGraphQLFragments(directory, definitions)
-    await writeTypeScriptTypes(directory, schema, definitions)
+    await writeTypeScriptTypes(
+      directory,
+      schema,
+      definitions,
+      graphqlTypegenOptions
+    )
   } catch (err) {
     context.reporter!.panicOnBuild({
       id: `12100`,
@@ -242,7 +251,7 @@ export const definitionsTypegen: ActionFunction<
   }
 }
 
-export const buildActions: ActionFunctionMap<IBuildContext, AnyEventObject> = {
+export const buildActions = {
   callApi,
   markNodesDirty,
   addNodeMutation,

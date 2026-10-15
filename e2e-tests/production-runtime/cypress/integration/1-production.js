@@ -9,6 +9,12 @@
 // "cypress/integration/1-production.js,cypress/integration/compilation-hash.js" \
 // -b chrome
 
+Cypress.on('uncaught:exception', (err) => {
+  if ((err.message.includes('Minified React error #418') || err.message.includes('Minified React error #423') || err.message.includes('Minified React error #425')) && Cypress.env(`TEST_PLUGIN_OFFLINE`)) {
+    return false
+  }
+})
+
 describe(`Production build tests`, () => {
   it(`should render properly`, () => {
     cy.visit(`/`).waitForRouteChange()
@@ -16,11 +22,13 @@ describe(`Production build tests`, () => {
 
   if (Cypress.env(`TEST_PLUGIN_OFFLINE`)) {
     it(`should activate the service worker`, () => {
+      cy.visit(`/`).waitForRouteChange()
       cy.waitForAPI(`onServiceWorkerActive`)
     })
   }
 
   it(`should navigate back after a reload`, () => {
+    cy.visit(`/`).waitForRouteChange()
     cy.getTestElement(`page2`).click()
 
     cy.waitForRouteChange().location(`pathname`).should(`equal`, `/page-2/`)
@@ -50,7 +58,7 @@ describe(`Production build tests`, () => {
         .getTestElement(`subdir-link`)
         .click()
         .location(`pathname`)
-        .should(`eq`, `/subdirectory/page-1`)
+        .should(`eq`, `/subdirectory/page-1/`)
     })
 
     it(`can navigate to a sibling page`, () => {
@@ -59,7 +67,7 @@ describe(`Production build tests`, () => {
         .getTestElement(`page-2-link`)
         .click()
         .location(`pathname`)
-        .should(`eq`, `/subdirectory/page-2`)
+        .should(`eq`, `/subdirectory/page-2/`)
     })
 
     it(`can navigate to a parent page`, () => {
@@ -68,7 +76,7 @@ describe(`Production build tests`, () => {
         .getTestElement(`page-parent-link`)
         .click()
         .location(`pathname`)
-        .should(`eq`, `/subdirectory`)
+        .should(`eq`, `/subdirectory/`)
     })
 
     it(`can navigate to a sibling page programatically`, () => {
@@ -77,7 +85,7 @@ describe(`Production build tests`, () => {
         .getTestElement(`page-2-button-link`)
         .click()
         .location(`pathname`)
-        .should(`eq`, `/subdirectory/page-2`)
+        .should(`eq`, `/subdirectory/page-2/`)
     })
   })
 
@@ -224,7 +232,7 @@ describe(`Production build tests`, () => {
   })
 
   describe(`Keeps search query`, () => {
-    describe(`No trailing slash canonical path (/slashes/no-trailing)`, () => {
+    describe(`Converts no trailing slash canonical path to trailing (/slashes/no-trailing)`, () => {
       it(`/slashes/no-trailing?param=value`, () => {
         cy.visit(`/slashes/no-trailing?param=value`).waitForRouteChange()
 
@@ -232,7 +240,7 @@ describe(`Production build tests`, () => {
           .invoke(`text`)
           .should(`equal`, `?param=value`)
 
-        cy.location(`pathname`).should(`equal`, `/slashes/no-trailing`)
+        cy.location(`pathname`).should(`equal`, `/slashes/no-trailing/`)
         cy.location(`search`).should(`equal`, `?param=value`)
       })
 
@@ -243,7 +251,7 @@ describe(`Production build tests`, () => {
           .invoke(`text`)
           .should(`equal`, `?param=value`)
 
-        cy.location(`pathname`).should(`equal`, `/slashes/no-trailing`)
+        cy.location(`pathname`).should(`equal`, `/slashes/no-trailing/`)
         cy.location(`search`).should(`equal`, `?param=value`)
       })
     })

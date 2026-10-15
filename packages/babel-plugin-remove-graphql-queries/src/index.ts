@@ -1,10 +1,10 @@
 /* eslint-disable no-unused-expressions */
 /*  eslint-disable new-cap */
 import graphql from "gatsby/graphql"
-import { murmurhash } from "./murmur"
 import nodePath from "path"
 import { NodePath, PluginObj } from "@babel/core"
-import { slash } from "gatsby-core-utils"
+import { slash } from "gatsby-core-utils/path"
+import { murmurhash } from "gatsby-core-utils/murmurhash"
 import { Binding } from "babel__traverse"
 import {
   CallExpression,
@@ -263,16 +263,17 @@ function getGraphQLTag(
   const normalizedText: string = graphql.stripIgnoredCharacters(text)
 
   const hash: number = murmurhash(normalizedText, 0)
+  const location = quasis[0].loc as SourceLocation | null
 
   try {
     const ast = graphql.parse(text)
 
     if (ast.definitions.length === 0) {
-      throw new EmptyGraphQLTagError(quasis[0].loc)
+      throw new EmptyGraphQLTagError(location)
     }
     return { ast, text: normalizedText, hash, isGlobal }
   } catch (err) {
-    throw new GraphQLSyntaxError(text, err, quasis[0].loc)
+    throw new GraphQLSyntaxError(text, err, location)
   }
 }
 
@@ -302,6 +303,8 @@ export default function ({ types: t }): PluginObj {
           JSXIdentifier(path2: NodePath<JSXIdentifier>): void {
             if (
               (process.env.NODE_ENV === `test` ||
+                // When Storybook is running, we need to process the queries
+                process.env.npm_lifecycle_script?.includes(`storybook`) ||
                 state.opts.stage === `develop-html`) &&
               path2.isJSXIdentifier({ name: `StaticQuery` }) &&
               path2.referencesImport(`gatsby`, ``) &&
@@ -309,7 +312,8 @@ export default function ({ types: t }): PluginObj {
             ) {
               const identifier = t.identifier(`staticQueryData`)
               const filename = state.file.opts.filename
-              const staticQueryDir = state.opts.staticQueryDir || `static/d`
+              const staticQueryDir =
+                state.opts.staticQueryDir || `page-data/sq/d`
               const shortResultPath = `public/${staticQueryDir}/${this.queryHash}.json`
               const resultPath = nodePath.join(process.cwd(), shortResultPath)
               // Add query
@@ -638,5 +642,4 @@ export {
   GraphQLSyntaxError,
   ExportIsNotAsyncError,
   isWithinConfigExport,
-  murmurhash,
 }

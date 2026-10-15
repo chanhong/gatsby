@@ -6,6 +6,7 @@ import {
   sourceNodes,
   onPreInit,
 } from "../gatsby-node"
+import { existingNodes, is } from "../backreferences"
 import { fetchContent, fetchContentTypes } from "../fetch"
 import { makeId } from "../normalize"
 
@@ -14,6 +15,10 @@ import richTextFixture from "../__fixtures__/rich-text-data"
 import restrictedContentTypeFixture from "../__fixtures__/restricted-content-type"
 import unpublishedFieldDelivery from "../__fixtures__/unpublished-fields-delivery"
 import unpublishedFieldPreview from "../__fixtures__/unpublished-fields-preview"
+import preserveBackLinks from "../__fixtures__/preserve-back-links"
+import editingNodeReferecingNodeWithChildLink from "../__fixtures__/editing-node-referencing-nodes-with-child-links"
+
+jest.setTimeout(30000)
 
 jest.mock(`../fetch`)
 jest.mock(`gatsby-core-utils`, () => {
@@ -58,7 +63,12 @@ describe(`gatsby-node`, () => {
 
   const actions = {
     createTypes: jest.fn(),
-    setPluginStatus: jest.fn(),
+    setPluginStatus: jest.fn(pluginStatusObject => {
+      pluginStatus = {
+        ...pluginStatus,
+        ...pluginStatusObject,
+      }
+    }),
     createNode: jest.fn(async node => {
       // similar checks as gatsby does
       if (!_.isPlainObject(node)) {
@@ -86,6 +96,7 @@ describe(`gatsby-node`, () => {
       currentNodeMap.delete(node.id)
     }),
     touchNode: jest.fn(),
+    enableStatefulSourceNodes: jest.fn(),
   }
   const schema = {
     buildObjectType: jest.fn(() => {
@@ -97,9 +108,20 @@ describe(`gatsby-node`, () => {
     }),
     buildInterfaceType: jest.fn(),
   }
+  let pluginStatus = {}
+  const resetPluginStatus = () => {
+    pluginStatus = {}
+  }
   const store = {
     getState: jest.fn(() => {
-      return { program: { directory: process.cwd() }, status: {} }
+      return {
+        program: { directory: process.cwd() },
+        status: {
+          plugins: {
+            [`gatsby-source-contentful`]: pluginStatus,
+          },
+        },
+      }
     }),
   }
   const cache = createMockCache()
@@ -402,7 +424,11 @@ describe(`gatsby-node`, () => {
     })
   }
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    existingNodes.clear()
+    is.firstSourceNodesCallOfCurrentNodeProcess = true
+    resetPluginStatus()
+
     // @ts-ignore
     fetchContent.mockClear()
     // @ts-ignore
@@ -534,6 +560,9 @@ describe(`gatsby-node`, () => {
         Array [
           "contentful-content-types-testSpaceId-master",
         ],
+        Array [
+          "contentful-foreign-reference-map-state-testSpaceId-master",
+        ],
       ]
     `)
 
@@ -546,6 +575,7 @@ describe(`gatsby-node`, () => {
     expect(cache.set.mock.calls.map(v => v[0])).toMatchInlineSnapshot(`
       Array [
         "contentful-content-types-testSpaceId-master",
+        "contentful-foreign-reference-map-state-testSpaceId-master",
       ]
     `)
     expect(actions.createNode).toHaveBeenCalledTimes(32)
@@ -588,6 +618,51 @@ describe(`gatsby-node`, () => {
         ],
       ]
     `)
+  })
+
+  it(`should create nodes with custom prefix`, async () => {
+    // @ts-ignore
+    fetchContent.mockImplementationOnce(startersBlogFixture.initialSync)
+    schema.buildObjectType.mockClear()
+    // @ts-ignore
+    await simulateGatsbyBuild({
+      typePrefix: `CustomPrefix`,
+    })
+
+    expect(schema.buildObjectType).toHaveBeenCalledTimes(3)
+    expect(schema.buildObjectType).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: `CustomPrefixPerson`,
+      })
+    )
+    expect(schema.buildObjectType).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: `CustomPrefixBlogPost`,
+      })
+    )
+    expect(schema.buildObjectType).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: `CustomPrefixAsset`,
+      })
+    )
+
+    expect(schema.buildObjectType).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: `ContentfulPerson`,
+      })
+    )
+
+    expect(schema.buildObjectType).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: `ContentfulBlogPost`,
+      })
+    )
+
+    expect(schema.buildObjectType).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: `ContentfulAsset`,
+      })
+    )
   })
 
   it(`should add a new blogpost and update linkedNodes`, async () => {
@@ -640,7 +715,7 @@ describe(`gatsby-node`, () => {
 
     expect(actions.createNode).toHaveBeenCalledTimes(46)
     expect(actions.deleteNode).toHaveBeenCalledTimes(0)
-    expect(actions.touchNode).toHaveBeenCalledTimes(32)
+    expect(actions.touchNode).toHaveBeenCalledTimes(0)
     expect(reporter.info.mock.calls).toMatchInlineSnapshot(`
       Array [
         Array [
@@ -730,7 +805,7 @@ describe(`gatsby-node`, () => {
 
     expect(actions.createNode).toHaveBeenCalledTimes(54)
     expect(actions.deleteNode).toHaveBeenCalledTimes(0)
-    expect(actions.touchNode).toHaveBeenCalledTimes(72)
+    expect(actions.touchNode).toHaveBeenCalledTimes(0)
     expect(reporter.info.mock.calls).toMatchInlineSnapshot(`
       Array [
         Array [
@@ -883,7 +958,7 @@ describe(`gatsby-node`, () => {
 
     expect(actions.createNode).toHaveBeenCalledTimes(52)
     expect(actions.deleteNode).toHaveBeenCalledTimes(2)
-    expect(actions.touchNode).toHaveBeenCalledTimes(74)
+    expect(actions.touchNode).toHaveBeenCalledTimes(2)
     expect(reporter.info.mock.calls).toMatchInlineSnapshot(`
       Array [
         Array [
@@ -969,7 +1044,7 @@ describe(`gatsby-node`, () => {
 
     expect(actions.createNode).toHaveBeenCalledTimes(54)
     expect(actions.deleteNode).toHaveBeenCalledTimes(2)
-    expect(actions.touchNode).toHaveBeenCalledTimes(74)
+    expect(actions.touchNode).toHaveBeenCalledTimes(2)
     expect(reporter.info.mock.calls).toMatchInlineSnapshot(`
       Array [
         Array [
@@ -1306,5 +1381,112 @@ describe(`gatsby-node`, () => {
         },
       })
     )
+  })
+
+  it(`should preserve back reference when referencing entry wasn't touched`, async () => {
+    // @ts-ignore
+    fetchContentTypes.mockImplementation(preserveBackLinks.contentTypeItems)
+    fetchContent
+      // @ts-ignore
+      .mockImplementationOnce(preserveBackLinks.initialSync)
+      .mockImplementationOnce(preserveBackLinks.editJustEntryWithBackLinks)
+
+    let blogPostNodes
+    let blogCategoryNodes
+    await simulateGatsbyBuild()
+
+    blogPostNodes = getNodes().filter(
+      node => node.internal.type === `ContentfulBlogPost`
+    )
+    blogCategoryNodes = getNodes().filter(
+      node => node.internal.type === `ContentfulBlogCategory`
+    )
+
+    expect(blogPostNodes.length).toEqual(1)
+    expect(blogCategoryNodes.length).toEqual(1)
+    expect(blogCategoryNodes[0][`blog post___NODE`]).toEqual([
+      blogPostNodes[0].id,
+    ])
+    expect(blogCategoryNodes[0][`title`]).toEqual(`CMS`)
+
+    await simulateGatsbyBuild()
+
+    blogPostNodes = getNodes().filter(
+      node => node.internal.type === `ContentfulBlogPost`
+    )
+    blogCategoryNodes = getNodes().filter(
+      node => node.internal.type === `ContentfulBlogCategory`
+    )
+
+    expect(blogPostNodes.length).toEqual(1)
+    expect(blogCategoryNodes.length).toEqual(1)
+    expect(blogCategoryNodes[0][`blog post___NODE`]).toEqual([
+      blogPostNodes[0].id,
+    ])
+    expect(blogCategoryNodes[0][`title`]).toEqual(`CMS edit #1`)
+  })
+
+  it(`should not apply parent node links to child nodes`, async () => {
+    // @ts-ignore
+    fetchContentTypes.mockImplementation(
+      editingNodeReferecingNodeWithChildLink.contentTypeItems
+    )
+    fetchContent
+      // @ts-ignore
+      .mockImplementationOnce(
+        editingNodeReferecingNodeWithChildLink.initialSync
+      )
+      .mockImplementationOnce(editingNodeReferecingNodeWithChildLink.addALink)
+
+    let blogPostNodes
+    let blogCategoryNodes
+    let blogCategoryChildNodes
+    await simulateGatsbyBuild()
+
+    blogPostNodes = getNodes().filter(
+      node => node.internal.type === `ContentfulBlogPost`
+    )
+    blogCategoryNodes = getNodes().filter(
+      node => node.internal.type === `ContentfulBlogCategory`
+    )
+    blogCategoryChildNodes = blogCategoryNodes.flatMap(node =>
+      node.children.map(childId => getNode(childId))
+    )
+
+    expect(blogPostNodes.length).toEqual(1)
+    expect(blogCategoryNodes.length).toEqual(1)
+    expect(blogCategoryChildNodes.length).toEqual(1)
+    // no backref yet
+    expect(blogCategoryNodes[0][`blog post___NODE`]).toBeUndefined()
+    expect(blogCategoryNodes[0][`title`]).toEqual(`CMS`)
+
+    // `body` field on child node is concrete value and not a link
+    expect(blogCategoryChildNodes[0][`body`]).toEqual(`cms`)
+    expect(blogCategoryChildNodes[0][`body___NODE`]).toBeUndefined()
+
+    await simulateGatsbyBuild()
+
+    blogPostNodes = getNodes().filter(
+      node => node.internal.type === `ContentfulBlogPost`
+    )
+    blogCategoryNodes = getNodes().filter(
+      node => node.internal.type === `ContentfulBlogCategory`
+    )
+    blogCategoryChildNodes = blogCategoryNodes.flatMap(node =>
+      node.children.map(childId => getNode(childId))
+    )
+
+    expect(blogPostNodes.length).toEqual(1)
+    expect(blogCategoryNodes.length).toEqual(1)
+    expect(blogCategoryChildNodes.length).toEqual(1)
+    // backref was added when entries were linked
+    expect(blogCategoryNodes[0][`blog post___NODE`]).toEqual([
+      blogPostNodes[0].id,
+    ])
+    expect(blogCategoryNodes[0][`title`]).toEqual(`CMS`)
+
+    // `body` field on child node is concrete value and not a link
+    expect(blogCategoryChildNodes[0][`body`]).toEqual(`cms`)
+    expect(blogCategoryChildNodes[0][`body___NODE`]).toBeUndefined()
   })
 })

@@ -1,22 +1,9 @@
-import {
-  createTestWorker,
-  GatsbyTestWorkerPool,
-  itWhenLMDB,
-} from "./test-helpers"
+import { createTestWorker, GatsbyTestWorkerPool } from "./test-helpers"
 import { store } from "../../../redux"
 import { actions } from "../../../redux/actions"
 import { getDataStore } from "../../../datastore"
 
 jest.setTimeout(15000)
-
-jest.mock(`gatsby-telemetry`, () => {
-  return {
-    decorateEvent: jest.fn(),
-    trackError: jest.fn(),
-    trackCli: jest.fn(),
-    isTrackingEnabled: jest.fn(),
-  }
-})
 
 jest.mock(`gatsby-cli/lib/reporter`, () => {
   return {}
@@ -35,7 +22,7 @@ afterEach(async () => {
   }
 })
 
-itWhenLMDB(`worker can access node created in main process`, async () => {
+it(`worker can access node created in main process`, async () => {
   worker = createTestWorker()
 
   const testNodeId = `shared-node`

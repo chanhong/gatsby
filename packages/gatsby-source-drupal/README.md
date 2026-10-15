@@ -45,8 +45,7 @@ count in collection queries" `/admin/config/services/jsonapi/extras` as that
 Gatsby has an Image CDN feature which speeds up your build times as well as your frontend performance.
 
 Previously Gatsby would fetch all image files during the Gatsby build process, transform them for frontend performance, and then serve them as static files on the frontend.
-With the new Image CDN feature images are lazily processed when users visit the frontend of your site. The first front-end visitor of any image will transform that image and cache it for all other users.
-Note that Image CDN works on all hosting platforms, but only speeds up your builds on Gatsby Cloud, as Gatsby Cloud is the most advanced CI/CD and hosting platform for the Gatsby framework.
+With Image CDN images are lazily processed when users visit the frontend of your site. The first front-end visitor of any image will transform that image and cache it for all other users. Image CDN works on all hosting platforms like Gatsby Cloud or Netlify.
 
 - [Image CDN blog post](https://www.gatsbyjs.com/blog/image-cdn-lightning-fast-image-processing-for-gatsby-cloud/)
 - [What is Image CDN?](https://support.gatsbyjs.com/hc/en-us/articles/4426379634835-What-is-Image-CDN-)
@@ -65,6 +64,18 @@ When you're using Gatsby Image CDN you no longer need Gatsby to fetch all of the
     resolve: `gatsby-source-drupal`,
     options: {
       skipFileDownloads: true,
+      // other plugin options go here
+    },
+  },
+```
+
+Note that this option will cause this plugin to fetch extra image metadata for Image CDN. If you need to use the `skipFileDownloads` option but don't want to use Image CDN and fetch extra metadata, you can disable it by explicitly turning Image CDN off:
+
+```js
+  {
+    resolve: `gatsby-source-drupal`,
+    options: {
+      imageCDN: false,
       // other plugin options go here
     },
   },
@@ -218,6 +229,49 @@ module.exports = {
 }
 ```
 
+One case where custom headers can be useful is if your webserver returns a `406 Not Acceptable` response.
+This happens when it requires narrow conformance with the JSON:API MIME type (e.g. Apache2 with security
+module enabled).
+
+```javascript
+module.exports = {
+  plugins: [
+    {
+      resolve: `gatsby-source-drupal`,
+      options: {
+        // ...
+        headers: {
+          accept: "application/vnd.api+json",
+        },
+      },
+    },
+  ],
+}
+```
+
+## CDN
+
+You can add an optional CDN or API gateway URL `proxyUrl` param. The URL can be a simple proxy of the Drupal
+`baseUrl`, or another URL (even containing a path) where the Drupal JSON API resources can be retrieved.
+
+This option is required as Drupal doesn't know about the CDN so it returns URLs pointing to the `baseUrl`. With `proxyUrl` set, the plugin will rewrite URLs returned from Drupal to keep pointing at the `proxyUrl`
+
+```javascript
+// In your gatsby-config.js
+module.exports = {
+  plugins: [
+    {
+      resolve: `gatsby-source-drupal`,
+      options: {
+        baseUrl: `https://live-contentacms.pantheonsite.io/`,
+        proxyUrl: `https://xyz.cloudfront.net/`, // optional, defaults to the value of baseUrl
+        apiBase: `api`, // optional, defaults to `jsonapi`
+      },
+    },
+  ],
+}
+```
+
 ## GET Search Params
 
 You can append optional GET request params to the request url using `params` option.
@@ -306,6 +360,12 @@ module.exports = {
 ## Concurrent API Requests
 
 You can use the `concurrentAPIRequests` option to change how many simultaneous API requests are made to the server/service. 20 is the default and seems to be the fastest for most sites.
+
+## API Request Timeout
+
+You can use the `requestTimeoutMS` option to set the request timeout for API requests. API requests sometimes stall and we want to retry these instead of endlessly waiting.
+
+The default is 30000ms. Very large sites might need to increase this.
 
 ## Disallowed Link Types
 
@@ -404,7 +464,17 @@ module.exports = {
         baseUrl: `https://live-contentacms.pantheonsite.io/`,
         languageConfig: {
           defaultLanguage: `en`,
-          enabledLanguages: [`en`, `fil`],
+          enabledLanguages: [
+            `en`,
+            `fil`,
+            // add an object here if you've renamed a langcode in Drupal
+            {
+              langCode: `en-gb`,
+              as: `uk`,
+            },
+          ],
+          filterByLanguages: false
+          // add a boolean `true` here if you'd like to filter the Drupal API response by the current language
           translatableEntities: [`node--article`],
           nonTranslatableEntities: [`file--file`],
         },
@@ -415,6 +485,37 @@ module.exports = {
 ```
 
 Some entities are not translatable like Drupal files and will return null result when language code from parent entity doesn't match up. These items can be specified as nonTranslatableEntities and receive the defaultLanguage as fallback.
+
+## Type prefix
+
+By default, types are created with names that match the types in Drupal. However you can use the `typePrefix` option to add a prefix to all types. This is useful if you have multiple Drupal sources and want to differentiate between them, or if you have Drupal types that conflict with other types in your site.
+
+```javascript
+// In your gatsby-config.js
+module.exports = {
+  plugins: [
+    {
+      resolve: `gatsby-source-drupal`,
+      options: {
+        baseUrl: `https://live-contentacms.pantheonsite.io/`,
+        typePrefix: `Drupal`,
+      },
+    },
+  ],
+}
+```
+
+You would then query for `allDrupalArticle` instead of `allArticle`.
+
+```graphql
+{
+  allDrupalArticle {
+    nodes {
+      title
+    }
+  }
+}
+```
 
 ## Gatsby Preview (experimental)
 

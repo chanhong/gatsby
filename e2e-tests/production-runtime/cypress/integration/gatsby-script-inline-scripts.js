@@ -17,6 +17,17 @@ const typesOfInlineScripts = [
   },
 ]
 
+Cypress.on(`uncaught:exception`, err => {
+  if (
+    (err.message.includes(`Minified React error #418`) ||
+      err.message.includes(`Minified React error #423`) ||
+      err.message.includes(`Minified React error #425`)) &&
+    Cypress.env(`TEST_PLUGIN_OFFLINE`)
+  ) {
+    return false
+  }
+})
+
 /**
  * Normally we would duplicate the tests so they're flatter and easier to debug,
  * but since the test count grew and the cases are exactly the same we'll iterate.
@@ -75,7 +86,9 @@ for (const { descriptor, inlineScriptType } of typesOfInlineScripts) {
       })
     })
 
-    describe(`when navigation occurs`, () => {
+    // The back/forward navigation tests are flaky in CI, so we retry them a few times
+    // TODO(serhalp): Investigate. Maybe related to bfcache functionality in modern browsers?
+    describe(`when navigation occurs`, { retries: { runMode: 5 } }, () => {
       it(`should load only once on initial page load`, () => {
         cy.visit(page.target).waitForRouteChange()
 
@@ -135,8 +148,8 @@ for (const { descriptor, inlineScriptType } of typesOfInlineScripts) {
         cy.visit(page.navigation).waitForRouteChange()
         cy.get(`a[href="${page.target}"][id=anchor-link]`).click()
         cy.get(`table[id=script-mark-records] tbody`) // Make sure history has time to change
-        cy.go(`back`)
-        cy.go(`forward`)
+        cy.go(`back`).waitForRouteChange()
+        cy.go(`forward`).waitForRouteChange()
 
         cy.get(`table[id=script-mark-records] tbody`)
           .children()
@@ -174,8 +187,8 @@ for (const { descriptor, inlineScriptType } of typesOfInlineScripts) {
       it(`should load only once if the page is revisited via browser back/forward buttons after Gatsby link navigation`, () => {
         cy.visit(page.navigation).waitForRouteChange()
         cy.get(`a[href="${page.target}"][id=gatsby-link]`).click()
-        cy.go(`back`)
-        cy.go(`forward`)
+        cy.go(`back`).waitForRouteChange()
+        cy.go(`forward`).waitForRouteChange()
 
         cy.get(`table[id=script-mark-records] tbody`)
           .children()

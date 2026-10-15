@@ -1,4 +1,4 @@
-import React, { Fragment, FunctionComponent } from "react"
+import React, { Fragment, FunctionComponent, PropsWithChildren } from "react"
 import terserMacro from "../../macros/terser.macro"
 import { Layout } from "../image-utils"
 
@@ -58,7 +58,7 @@ export function getSizer(
   }
 
   if (layout === `constrained`) {
-    sizer = `<div style="max-width: ${width}px; display: block;"><img alt="" role="presentation" aria-hidden="true" src="data:image/svg+xml;charset=utf-8,%3Csvg height='${height}' width='${width}' xmlns='http://www.w3.org/2000/svg' version='1.1'%3E%3C/svg%3E" style="max-width: 100%; display: block; position: static;"></div>`
+    sizer = `<div style="max-width: ${width}px; display: block;"><img alt="" role="presentation" aria-hidden="true" src="data:image/svg+xml;charset=utf-8,%3Csvg%20height='${height}'%20width='${width}'%20xmlns='http://www.w3.org/2000/svg'%20version='1.1'%3E%3C/svg%3E" style="max-width: 100%; display: block; position: static;"></div>`
   }
 
   return sizer
@@ -82,7 +82,7 @@ const Sizer: FunctionComponent<ILayoutWrapperProps> = function Sizer({
           alt=""
           role="presentation"
           aria-hidden="true"
-          src={`data:image/svg+xml;charset=utf-8,%3Csvg height='${height}' width='${width}' xmlns='http://www.w3.org/2000/svg' version='1.1'%3E%3C/svg%3E`}
+          src={`data:image/svg+xml;charset=utf-8,%3Csvg%20height='${height}'%20width='${width}'%20xmlns='http://www.w3.org/2000/svg'%20version='1.1'%3E%3C/svg%3E`}
           style={{
             maxWidth: `100%`,
             display: `block`,
@@ -96,14 +96,15 @@ const Sizer: FunctionComponent<ILayoutWrapperProps> = function Sizer({
   return null
 }
 
-export const LayoutWrapper: FunctionComponent<ILayoutWrapperProps> =
-  function LayoutWrapper({ children, ...props }) {
-    return (
-      <Fragment>
-        <Sizer {...props} />
-        {children}
+export const LayoutWrapper: FunctionComponent<
+  PropsWithChildren<ILayoutWrapperProps>
+> = function LayoutWrapper({ children, ...props }) {
+  return (
+    <Fragment>
+      <Sizer {...props} />
+      {children}
 
-        {SERVER ? <NativeScriptLoading /> : null}
-      </Fragment>
-    )
-  }
+      {SERVER ? <NativeScriptLoading /> : null}
+    </Fragment>
+  )
+}

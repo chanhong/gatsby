@@ -70,22 +70,36 @@ export function parseShopifyId(shopifyId: string): Array<string> {
   return shopifyId.match(pattern) || []
 }
 
-export function decorateBulkObject(input: unknown): unknown {
+export function decorateBulkObject(
+  input: unknown,
+  createGatsbyNodeId: (shopifyId: string) => string,
+  inputKey: string | null = null,
+  parent: unknown | null = null
+): unknown {
   if (input && typeof input === `object`) {
     if (Array.isArray(input)) {
-      return input.map(decorateBulkObject)
+      return input.map(item =>
+        decorateBulkObject(item, createGatsbyNodeId, inputKey, input)
+      )
     }
 
     const obj: Record<string, unknown> = { ...input }
 
     for (const key of Object.keys(obj)) {
-      obj[key] = decorateBulkObject(obj[key])
+      obj[key] = decorateBulkObject(obj[key], createGatsbyNodeId, key, obj)
     }
 
     // We must convert ID to ShopifyID so that it doesn't collide with Gatsby's internal ID
     if (obj.id) {
       obj.shopifyId = obj.id
       delete obj.id
+
+      // if an object only has an ID, we know it's a node reference
+      // so we create a Gatsby node ID for it on a new field to avoid introducing a breaking change
+      if (Object.keys(input).length === 1 && parent) {
+        ;(parent as Record<string, unknown>)[`_${inputKey}`] =
+          createGatsbyNodeId(obj.shopifyId as string)
+      }
     }
 
     return obj
@@ -95,13 +109,7 @@ export function decorateBulkObject(input: unknown): unknown {
 }
 
 export async function processShopifyImages(
-  {
-    actions: { createNode },
-    createNodeId,
-    cache,
-    store,
-    reporter,
-  }: SourceNodesArgs,
+  { actions: { createNode }, createNodeId, cache }: SourceNodesArgs,
   node: IShopifyNode
 ): Promise<void> {
   const type = parseShopifyId(node.shopifyId)[1]
@@ -122,8 +130,6 @@ export async function processShopifyImages(
           createNode,
           createNodeId,
           parentNodeId: node.id,
-          store,
-          reporter,
         })
 
         image.localFile___NODE = fileNode.id

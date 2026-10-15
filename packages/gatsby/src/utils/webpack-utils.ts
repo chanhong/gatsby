@@ -13,7 +13,7 @@ import { getBrowsersList } from "./browserslist"
 import ESLintPlugin from "eslint-webpack-plugin"
 import { cpuCoreCount } from "gatsby-core-utils"
 import { GatsbyWebpackStatsExtractor } from "./gatsby-webpack-stats-extractor"
-import { GatsbyWebpackEslintGraphqlSchemaReload } from "./gatsby-webpack-eslint-graphql-schema-reload-plugin"
+import { getPublicPath } from "./get-public-path"
 import {
   GatsbyWebpackVirtualModules,
   VIRTUAL_MODULES_BASE_PATH,
@@ -24,6 +24,7 @@ import { IProgram, Stage } from "../commands/types"
 import { eslintConfig, eslintRequiredConfig } from "./eslint-config"
 import { store } from "../redux"
 import type { RuleSetUseItem } from "webpack"
+import { ROUTES_DIRECTORY } from "../constants"
 
 type Loader = string | { loader: string; options?: { [name: string]: any } }
 type LoaderResolver<T = Record<string, unknown>> = (options?: T) => Loader
@@ -38,7 +39,7 @@ type ContextualRuleFactory<T = Record<string, unknown>> = RuleFactory<T> & {
   external?: RuleFactory<T>
 }
 
-type PluginFactory = (...args: any) => WebpackPluginInstance
+type PluginFactory = (...args: any) => WebpackPluginInstance | null
 
 type BuiltinPlugins = typeof builtinPlugins
 
@@ -183,6 +184,9 @@ export const createWebpackUtils = (
 
   const isSSR = stage.includes(`html`)
   const { config } = store.getState()
+  const { assetPrefix, pathPrefix } = config
+
+  const publicPath = getPublicPath({ assetPrefix, pathPrefix, ...program })
 
   const makeExternalOnly =
     (original: RuleFactory) =>
@@ -200,6 +204,25 @@ export const createWebpackUtils = (
       return rule
     }
 
+  const fileLoaderCommonOptions: {
+    name: string
+    publicPath?: string
+    outputPath?: string
+  } = {
+    name: `${assetRelativeRoot}[name]-[hash].[ext]`,
+  }
+
+  if (stage === `build-html` || stage === `develop-html`) {
+    // build-html and develop-html outputs to `.cache/page-ssr/routes/` (ROUTES_DIRECTORY)
+    // so this config is setting it to output assets to `public` (outputPath)
+    // while preserving "url" (publicPath)
+    fileLoaderCommonOptions.outputPath = path.relative(
+      ROUTES_DIRECTORY,
+      `public`
+    )
+    fileLoaderCommonOptions.publicPath = publicPath || `/`
+  }
+
   const loaders: ILoaderUtils = {
     json: (options = {}) => {
       return {
@@ -209,8 +232,11 @@ export const createWebpackUtils = (
     },
     yaml: (options = {}) => {
       return {
-        options,
         loader: require.resolve(`yaml-loader`),
+        options: {
+          asJSON: true,
+          ...options,
+        },
       }
     },
 
@@ -268,7 +294,7 @@ export const createWebpackUtils = (
         modulesOptions = {
           auto: undefined,
           namedExport: true,
-          localIdentName: `[name]--[local]--[hash:base64:5]`,
+          localIdentName: `[name]--[local]--[hash:hex:5]`,
           exportLocalsConvention: `dashesOnly`,
           exportOnlyLocals: isSSR,
         }
@@ -346,7 +372,7 @@ export const createWebpackUtils = (
       return {
         loader: require.resolve(`file-loader`),
         options: {
-          name: `${assetRelativeRoot}[name]-[hash].[ext]`,
+          ...fileLoaderCommonOptions,
           ...options,
         },
       }
@@ -357,7 +383,7 @@ export const createWebpackUtils = (
         loader: require.resolve(`url-loader`),
         options: {
           limit: 10000,
-          name: `${assetRelativeRoot}[name]-[hash].[ext]`,
+          ...fileLoaderCommonOptions,
           fallback: require.resolve(`file-loader`),
           ...options,
         },
@@ -430,7 +456,7 @@ export const createWebpackUtils = (
           )
         },
         type: `javascript/auto`,
-        use: ({ issuer }): Array<RuleSetUseItem> => [
+        use: ({ resourceQuery, issuer }): Array<RuleSetUseItem> => [
           // If a JS import comes from async-requires, assume it is for a page component.
           // Using `issuer` allows us to avoid mutating async-requires for this case.
           //
@@ -445,6 +471,7 @@ export const createWebpackUtils = (
             configFile: true,
             compact: PRODUCTION,
             isPageTemplate: /async-requires/.test(issuer),
+            resourceQuery,
           }),
         ],
       }
@@ -500,7 +527,7 @@ export const createWebpackUtils = (
         `gatsby-link`,
         `gatsby-script`,
         `gatsby-react-router-scroll`,
-        `invariant`,
+        `tiny-invariant`,
         `lodash`,
         `mitt`,
         `prop-types`,
@@ -723,7 +750,6 @@ export const createWebpackUtils = (
                 `removeHiddenElems`,
                 `removeMetadata`,
                 `removeNonInheritableGroupAttrs`,
-                `removeOffCanvasPaths`, // Default: disabled
                 `removeRasterImages`, // Default: disabled
                 `removeScriptElement`, // Default: disabled
                 `removeStyleElement`, // Default: disabled
@@ -783,16 +809,15 @@ export const createWebpackUtils = (
     plugins.ignore({ resourceRegExp: /^\.\/locale$/, contextRegExp: /moment$/ })
 
   plugins.extractStats = (): GatsbyWebpackStatsExtractor =>
-    new GatsbyWebpackStatsExtractor()
+    new GatsbyWebpackStatsExtractor(publicPath)
 
-  plugins.eslintGraphqlSchemaReload =
-    (): GatsbyWebpackEslintGraphqlSchemaReload =>
-      new GatsbyWebpackEslintGraphqlSchemaReload()
+  // TODO: remove this in v5
+  plugins.eslintGraphqlSchemaReload = (): null => null
 
   plugins.virtualModules = (): GatsbyWebpackVirtualModules =>
     new GatsbyWebpackVirtualModules()
 
-  plugins.eslint = (schema: GraphQLSchema): WebpackPluginInstance => {
+  plugins.eslint = (): WebpackPluginInstance => {
     const options = {
       extensions: [`js`, `jsx`],
       exclude: [
@@ -800,7 +825,7 @@ export const createWebpackUtils = (
         `/bower_components/`,
         VIRTUAL_MODULES_BASE_PATH,
       ],
-      ...eslintConfig(schema, config.jsxRuntime === `automatic`),
+      ...eslintConfig(config.jsxRuntime === `automatic`),
     }
     // @ts-ignore
     return new ESLintPlugin(options)

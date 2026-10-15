@@ -22,13 +22,14 @@ describe(`setSiteConfig`, () => {
       Object {
         "payload": Object {
           "graphqlTypegen": false,
+          "headers": Array [],
           "jsxRuntime": "classic",
           "pathPrefix": "",
           "polyfill": true,
           "siteMetadata": Object {
             "hi": true,
           },
-          "trailingSlash": "legacy",
+          "trailingSlash": "always",
         },
         "type": "SET_SITE_CONFIG",
       }
@@ -41,10 +42,11 @@ describe(`setSiteConfig`, () => {
       Object {
         "payload": Object {
           "graphqlTypegen": false,
+          "headers": Array [],
           "jsxRuntime": "classic",
           "pathPrefix": "",
           "polyfill": true,
-          "trailingSlash": "legacy",
+          "trailingSlash": "always",
         },
         "type": "SET_SITE_CONFIG",
       }

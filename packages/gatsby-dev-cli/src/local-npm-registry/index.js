@@ -49,6 +49,8 @@ exports.publishPackagesLocallyAndInstall = async ({
   ignorePackageJSONChanges,
   yarnWorkspaceRoot,
   externalRegistry,
+  root,
+  packageManager,
 }) => {
   await startServer()
 
@@ -63,6 +65,7 @@ exports.publishPackagesLocallyAndInstall = async ({
       packageNameToPath,
       versionPostFix,
       ignorePackageJSONChanges,
+      root,
     })
   }
 
@@ -73,5 +76,6 @@ exports.publishPackagesLocallyAndInstall = async ({
     yarnWorkspaceRoot,
     newlyPublishedPackageVersions,
     externalRegistry,
+    packageManager,
   })
 }

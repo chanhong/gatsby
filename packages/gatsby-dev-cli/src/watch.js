@@ -38,6 +38,7 @@ async function watch(
     localPackages,
     packageNameToPath,
     externalRegistry,
+    packageManager,
   }
 ) {
   setDefaultSpawnStdio(quiet ? `ignore` : `inherit`)
@@ -157,6 +158,8 @@ async function watch(
           ignorePackageJSONChanges,
           yarnWorkspaceRoot,
           externalRegistry,
+          root,
+          packageManager,
         })
       } else {
         // run `yarn`
@@ -342,6 +345,8 @@ async function watch(
             localPackages,
             ignorePackageJSONChanges,
             externalRegistry,
+            root,
+            packageManager,
           })
           packagesToPublish.clear()
           isPublishing = false

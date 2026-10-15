@@ -110,8 +110,6 @@ query {
 }
 ```
 
-![GraphiQL with above query inserted](../../images/remote-file-node-graphiql-preview.png)
-
 You can then use `gatsby-transformer-sharp` & `gatsby-plugin-image` to fill in the query for a fixed image here. For more information on transforming images using parameters and fragments, check out the ["Using Gatsby Plugin Image" guide](/docs/how-to/images-and-media/using-gatsby-plugin-image/).
 
 ```graphql
@@ -128,7 +126,7 @@ query {
 }
 ```
 
-And finally, you can update the template for this blog post to include a featured image node. Note the alt text still comes from the post frontmatter. This template is based on the one in the [Programmatically create pages from data](/docs/tutorial/part-7/) section of the Gatsby Tutorial.
+And finally, you can update the template for this blog post to include a featured image node. Note the alt text still comes from the post frontmatter. This template is based on the one in the [Programmatically create pages from data](/docs/tutorial/getting-started/part-7/) section of the Gatsby Tutorial.
 
 ```jsx
 import React from "react"

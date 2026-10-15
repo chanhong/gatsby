@@ -5,14 +5,6 @@ import { compileGatsbyFiles } from "../../parcel/compile-gatsby-files"
 
 let worker: GatsbyTestWorkerPool | undefined
 
-jest.mock(`gatsby-telemetry`, () => {
-  return {
-    decorateEvent: jest.fn(),
-    trackCli: jest.fn(),
-    isTrackingEnabled: jest.fn(),
-  }
-})
-
 beforeEach(() => {
   store.dispatch({ type: `DELETE_CACHE` })
 })

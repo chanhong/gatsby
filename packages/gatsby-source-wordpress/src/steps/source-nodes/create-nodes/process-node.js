@@ -12,16 +12,20 @@ import fs from "fs-extra"
 import { supportedExtensions } from "gatsby-transformer-sharp/supported-extensions"
 import replaceAll from "replaceall"
 import { usingGatsbyV4OrGreater } from "~/utils/gatsby-version"
-import { gatsbyImageResolver } from "gatsby-plugin-utils/dist/polyfill-remote-file/graphql/gatsby-image-resolver"
-import { publicUrlResolver } from "gatsby-plugin-utils/dist/polyfill-remote-file/graphql/public-url-resolver"
+import {
+  gatsbyImageResolver,
+  publicUrlResolver,
+} from "gatsby-plugin-utils/polyfill-remote-file"
 
 import { formatLogMessage } from "~/utils/format-log-message"
 
 import fetchReferencedMediaItemsAndCreateNodes, {
   stripImageSizesFromUrl,
 } from "../fetch-nodes/fetch-referenced-media-items"
-import btoa from "btoa"
-import store from "~/store"
+import { b64e } from "~/utils/string-encoding"
+import { getStore } from "~/store"
+
+import { store as gatsbyStore } from "gatsby/dist/redux"
 
 /**
  * Takes in a MediaItem node from WPGraphQL as well as Gatsby plugin options and returns the correct placeholder URL for GatsbyImage
@@ -104,7 +108,7 @@ const getCheerioImgDbId = cheerioImg => {
 }
 
 // media items are of the "post" type
-const dbIdToMediaItemRelayId = dbId => (dbId ? btoa(`post:${dbId}`) : null)
+const dbIdToMediaItemRelayId = dbId => (dbId ? b64e(`post:${dbId}`) : null)
 
 const getCheerioImgRelayId = cheerioImg =>
   dbIdToMediaItemRelayId(getCheerioImgDbId(cheerioImg))
@@ -166,7 +170,7 @@ const fetchNodeHtmlImageMediaItemNodes = async ({
   wpUrl,
 }) => {
   // get all the image nodes we've cached from elsewhere
-  const { nodeMetaByUrl } = store.getState().imageNodes
+  const { nodeMetaByUrl } = getStore().getState().imageNodes
 
   const previouslyCachedNodesByUrl = (
     await Promise.all(
@@ -417,7 +421,7 @@ const copyFileToStaticAndReturnUrlPath = async (fileNode, helpers) => {
 const cacheCreatedFileNodeBySrc = ({ node, src }) => {
   if (node) {
     // save any fetched media items in our global media item cache
-    store.dispatch.imageNodes.pushNodeMeta({
+    getStore().dispatch.imageNodes.pushNodeMeta({
       sourceUrl: src,
       id: node.id,
       modifiedGmt: node.modifiedGmt,
@@ -610,7 +614,8 @@ export const replaceNodeHtmlImages = async ({
                 quality,
                 formats,
               },
-              helpers.actions
+              helpers.actions,
+              gatsbyStore
             )
           } else {
             publicUrl = publicUrlResolver(
@@ -622,7 +627,8 @@ export const replaceNodeHtmlImages = async ({
                   contentDigest: imageNode.modifiedGmt,
                 },
               },
-              helpers.actions
+              helpers.actions,
+              gatsbyStore
             )
           }
         } catch (e) {
@@ -664,7 +670,8 @@ export const replaceNodeHtmlImages = async ({
       ) {
         gatsbyImageHydrationData = {
           image: imageResize,
-          alt: cheerioImg?.attribs?.alt,
+          // Wordpress tells users to leave "alt" empty if image is decorative. But it returns undefined, not ``
+          alt: cheerioImg?.attribs?.alt ?? ``,
           className: `${
             cheerioImg?.attribs?.class || ``
           } inline-gatsby-image-wrapper`,
@@ -680,7 +687,8 @@ export const replaceNodeHtmlImages = async ({
           `img`,
           {
             src: publicUrl,
-            alt: cheerioImg?.attribs?.alt,
+            // Wordpress tells users to leave "alt" empty if image is decorative. But it returns undefined, not ``
+            alt: cheerioImg?.attribs?.alt ?? ``,
             className: `${
               cheerioImg?.attribs?.class || ``
             } inline-gatsby-image-wrapper`,
@@ -735,17 +743,32 @@ const replaceFileLinks = async ({
     return nodeString
   }
 
-  const hrefMatches = execall(
-    /(\\"|\\'|\()([^'"()]*)(\/wp-content\/uploads\/[^'">()]+)(\\"|\\'|>|\))/gm,
-    nodeString
-  )
+  const hrefMatches = [
+    // match url pathnames in html fields, for ex /wp-content/uploads/2019/01/image.jpg
+    ...(execall(
+      /(\\"|\\'|\()([^'"()]*)(\/wp-content\/uploads\/[^'">()]+)(\\"|\\'|>|\))/gm,
+      nodeString
+    ) || []),
+    // match full urls in json fields, for ex https://example.com/wp-content/uploads/2019/01/image.jpg
+    ...(execall(
+      new RegExp(
+        `(\\"|\\'|\\()([^'"()]*)(${wpUrl}\/wp-content\/uploads\/[^'">()]+)(\\"|\\'|>|\\))`,
+        `gm`
+      ),
+      nodeString
+    ) || []),
+  ]
 
   if (hrefMatches.length) {
     // eslint-disable-next-line arrow-body-style
-    const mediaItemUrlsAndMatches = hrefMatches.map(matchGroup => ({
-      matchGroup,
-      url: `${wpUrl}${matchGroup.subMatches[2]}`,
-    }))
+    const mediaItemUrlsAndMatches = hrefMatches.map(matchGroup => {
+      const match = matchGroup.subMatches[2]
+      const url = match.startsWith(wpUrl) ? match : `${wpUrl}${match}`
+      return {
+        matchGroup,
+        url,
+      }
+    })
 
     const mediaItemUrls = mediaItemUrlsAndMatches
       .map(({ url }) => url)
@@ -794,7 +817,7 @@ const replaceFileLinks = async ({
           return null
         }
 
-        const [, hostname, path] = mediaItemMatchGroup?.subMatches
+        const [, hostname, path] = mediaItemMatchGroup.subMatches
 
         cacheCreatedFileNodeBySrc({
           node: mediaItemNode,

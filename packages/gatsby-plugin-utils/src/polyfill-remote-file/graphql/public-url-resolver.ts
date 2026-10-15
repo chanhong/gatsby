@@ -1,36 +1,50 @@
 import { generateFileUrl } from "../utils/url-generator"
 import {
   dispatchLocalFileServiceJob,
-  shouldDispatch,
+  shouldDispatchLocalFileServiceJob,
 } from "../jobs/dispatchers"
-import type { Actions } from "gatsby"
+import type { Actions, Store } from "gatsby"
 import type { IRemoteFileNode, IGraphQLFieldConfigDefinition } from "../types"
 
 export function publicUrlResolver(
   source: IRemoteFileNode,
-  actions: Actions
+  actions: Actions,
+  store?: Store
 ): string {
-  if (shouldDispatch()) {
+  if (shouldDispatchLocalFileServiceJob()) {
     dispatchLocalFileServiceJob(
       {
         url: source.url,
+        mimeType: source.mimeType,
         filename: source.filename,
         contentDigest: source.internal.contentDigest,
       },
-      actions
+      actions,
+      store
     )
   }
 
-  return generateFileUrl({ url: source.url, filename: source.filename })
+  return generateFileUrl(
+    {
+      url: source.url,
+      mimeType: source.mimeType,
+      filename: source.filename,
+      internal: {
+        contentDigest: source.internal.contentDigest,
+      },
+    },
+    store
+  )
 }
 
 export function generatePublicUrlFieldConfig(
-  actions: Actions
+  actions: Actions,
+  store?: Store
 ): IGraphQLFieldConfigDefinition<IRemoteFileNode, string> {
   return {
     type: `String!`,
     resolve(source): string {
-      return publicUrlResolver(source, actions)
+      return publicUrlResolver(source, actions, store)
     },
   }
 }
